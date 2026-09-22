@@ -12,14 +12,40 @@ const priceField = document.querySelector("#preco");
 const quantityField = document.querySelector("#quantidade");
 const supplierField = document.querySelector("#fornecedor");
 
-let products = [
+const STORAGE_KEY = "butikin-nuufita-produtos";
+
+const defaultProducts = [
   { id: 1, name: "Skol Lata 350ml", price: 3.5, quantity: 48, supplier: "Ambev Distribuidora" },
   { id: 2, name: "Brahma Long Neck 355ml", price: 4.5, quantity: 36, supplier: "Ambev Distribuidora" },
   { id: 3, name: "Heineken Long Neck 330ml", price: 6.5, quantity: 24, supplier: "Heineken Brasil" },
   { id: 4, name: "Corona Extra 330ml", price: 7.5, quantity: 24, supplier: "Grupo Modelo" },
 ];
 
-let nextId = 5;
+function loadProducts() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (erro) {
+    console.error("Não foi possível ler os produtos salvos:", erro);
+  }
+  return defaultProducts;
+}
+
+function saveProducts() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+  } catch (erro) {
+    console.error("Não foi possível salvar os produtos:", erro);
+  }
+}
+
+let products = loadProducts();
+
+let nextId = products.length
+  ? Math.max(...products.map(function (p) { return p.id; })) + 1
+  : 1;
 
 let editingId = null;
 
@@ -143,6 +169,7 @@ function removeProduct(id) {
     stopEditing();
   }
 
+  saveProducts();
   renderList();
 }
 
@@ -190,6 +217,7 @@ productForm.addEventListener("submit", function (event) {
     productForm.reset();
   }
 
+  saveProducts();
   renderList();
 });
 
